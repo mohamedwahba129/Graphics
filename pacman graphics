@@ -1,0 +1,650 @@
+<!-- My scene -->
+	<canvas id="scene"></canvas>
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<script src="three.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<script src="OrbitControls.js"></script> 
+
+
+<body onkeydown="KeyPressed(event)">
+
+	<div class="gameOver" id="gameOver">
+		<div class="game-over">
+			Game Over
+			
+		</div>
+		<button type="button" name="playAgain" class="playAgain" id="playAgain" onclick="restart()">
+			Play Again
+		</button>
+	</div>
+
+	<script>
+	
+	//Get the height and the width of the window
+	var ww = window.innerWidth,
+		wh = window.innerHeight;
+		
+		var spheres=[];
+		var cubes=[];
+
+	function init(){
+	
+		renderer = new THREE.WebGLRenderer({canvas : document.getElementById('scene')});
+
+		renderer.setClearColor(0xffffff);
+	
+		renderer.setSize(ww,wh);
+
+		scene = new THREE.Scene();	
+
+		camera = new THREE.PerspectiveCamera(100, ww/wh, 0.1, 10000 );
+		
+		camera.position.set(0,-500, 500);
+		
+		scene.add(camera);
+
+		control = new THREE.OrbitControls( camera );
+		
+		var light = new THREE.AmbientLight(0xffffff, 0.5);
+
+		scene.add(light);
+		createShapes();
+
+	
+	render();
+	
+		renderer.render(scene,camera);
+
+	
+	};
+	
+	
+	
+	function createShapes(){
+		//Plane 
+		
+		const loader =new THREE.TextureLoader();
+
+		const texmat=new THREE.MeshBasicMaterial({
+			map:loader.load('data:image/jpeg;base64,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')	,side : THREE.DoubleSide});
+
+		const geometry = new THREE.PlaneGeometry(2000,1000,100 );
+	const material = new THREE.MeshBasicMaterial( {color: 0x0d0063, side: THREE.DoubleSide} );
+	const plane = new THREE.Mesh( geometry, texmat );
+	scene.add( plane );
+	
+	plane.position.x=0;
+	plane.position.y=0;
+	plane.position.z=100;
+	
+		//Frame
+		
+		const loader1 =new THREE.TextureLoader();
+		const texmat1=new THREE.MeshBasicMaterial({
+			map:loader1.load('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCwZVzrCOj4u8N6BazCufH2m4flvlU_3PMOA&usqp=CAU')
+		});
+		
+		
+		geometryCube = new THREE.CubeGeometry(2000,20,120);
+		cube = new THREE.Mesh(geometryCube, texmat1);
+		cube.position.x = -10;
+		cube.position.y = 500;
+		cube.position.z = 130;
+	
+		scene.add(cube);
+
+
+
+
+		geometryCube = new THREE.CubeGeometry(2000,20,120);
+		cube1 = new THREE.Mesh(geometryCube,texmat1);
+		cube1.position.x = -10;
+		cube1.position.y = -500;
+		cube1.position.z = 130;
+	
+		scene.add(cube1);
+	
+		
+		geometryCube = new THREE.CubeGeometry(20,1000,120);
+		cube2 = new THREE.Mesh(geometryCube,texmat1);
+		cube2.position.x = -1000;
+		cube2.position.y = 0;
+		cube2.position.z = 130;
+	scene.add(cube2);
+
+
+		
+		geometryCube = new THREE.CubeGeometry(20,1020,120);
+		cube3 = new THREE.Mesh(geometryCube, texmat1);
+		cube3.position.x = 1000;
+		cube3.position.y = 0;
+		cube3.position.z = 130;
+
+		scene.add(cube3);
+	
+		
+		//obstacels
+		Obastcelsmaterial = new THREE.MeshLambertMaterial({color:0xff0000, wireframe: false});
+		//vertical
+		const loader2 =new THREE.TextureLoader();
+		const texmat2=new THREE.MeshBasicMaterial({
+			map:loader2.load('data:image/jpeg;base64,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')
+			});
+		geometryCube = new THREE.CubeGeometry(400,150,120);
+		cube4 = new THREE.Mesh(geometryCube, texmat2);
+		cube4.position.x = -180;
+		cube4.position.y = 210;
+		cube4.position.z = 130;
+	
+		scene.add(cube4);
+		cubes.push(cube4);
+	
+		geometryCube = new THREE.CubeGeometry(20,300,120);
+		cube5 = new THREE.Mesh(geometryCube, texmat2);
+		cube5.position.x =510;
+		cube5.position.y = 140;
+		cube5.position.z = 130;
+	
+		scene.add(cube5);
+		cubes.push(cube5);
+	
+		geometryCube = new THREE.CubeGeometry(20,300,120);
+		cube6 = new THREE.Mesh(geometryCube, texmat2);
+		cube6.position.x = 280;
+		cube6.position.y = -70;
+		cube6.position.z = 130;
+		
+		scene.add(cube6);
+		cubes.push(cube6);
+	
+		geometryCube = new THREE.CubeGeometry(20,150,120);
+		cube7 = new THREE.Mesh(geometryCube, texmat2);
+		cube7.position.x = -620;
+		cube7.position.y = -30;
+		cube7.position.z = 130;
+		scene.add(cube7);
+		cubes.push(cube7);
+
+	
+		geometryCube = new THREE.CubeGeometry(20,300,120);
+		cube8 = new THREE.Mesh(geometryCube, texmat2);
+		cube8.position.x = 510;
+		cube8.position.y = -340;
+		cube8.position.z = 130;
+			scene.add(cube8);
+			cubes.push(cube8);
+
+	
+	//horizontal
+		geometryCube = new THREE.CubeGeometry(1200,20,120);
+		cube9 = new THREE.Mesh(geometryCube,texmat2);
+		cube9.position.x = -85;
+		cube9.position.y = 290;
+		cube9.position.z = 130;
+		scene.add(cube9);
+		cubes.push(cube9);
+	
+	
+	
+		geometryCube = new THREE.CubeGeometry(150,20,120);
+		cube10 = new THREE.Mesh(geometryCube,texmat2);
+		cube10.position.x = 850;
+		cube10.position.y = -20;
+		cube10.position.z = 130;
+		scene.add(cube10);
+		cubes.push(cube10);
+
+	
+		geometryCube = new THREE.CubeGeometry(900,20,120);
+		cube11 = new THREE.Mesh(geometryCube,texmat2);
+		cube11.position.x =-180;
+		cube11.position.y = -110;
+		cube11.position.z = 130;
+		scene.add(cube11);
+		cubes.push(cube11);
+	
+		
+	
+		geometryCube = new THREE.CubeGeometry(700,20,120);
+		cube13 = new THREE.Mesh(geometryCube,texmat2);
+		cube13.position.set(-630,110,30);
+		scene.add(cube13);
+		cubes.push(cube13);
+		
+	
+		geometryCube = new THREE.CubeGeometry(1000,20,120);
+		cube14 = new THREE.Mesh(geometryCube,texmat2);
+		cube14.position.x = -350;
+		cube14.position.y = -290;
+		cube14.position.z = 130;
+		scene.add(cube14);
+		cubes.push(cube14);
+	
+
+
+		const loader3 =new THREE.TextureLoader();
+		const texmat3=new THREE.MeshBasicMaterial({
+			map:loader3.load('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7JI4je824ZDUMyLXhrvmcJUMRJez0jv20Jw&usqp=CAU'
+			)});
+
+		const Sgeometry = new THREE.SphereGeometry( 30, 30, 30 );
+		const Smaterial = new THREE.MeshBasicMaterial( {color: 0xf0c800} );
+
+		sphere = new THREE.Mesh( Sgeometry, texmat3 );
+	
+		sphere.name='sphere';
+	
+		sphere.position.setX(750); 
+		sphere.position.setY(-400);
+		sphere.position.setZ(130);
+		sphere.rotation.x=0.9;
+		sphere.rotation.z=1;
+
+		sphere.rotation.y=1;
+
+		scene.add( sphere );
+
+		//FISRT POINTS all done
+		
+		var ctr=-320;
+		 for(let i=0;i<3;i++){
+	
+			const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+		const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+		sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+		sphere2.position.setX(750); 
+		sphere2.position.setY(ctr);
+		sphere2.position.setZ(130);
+		scene.add( sphere2 );
+	ctr+=80;
+	spheres.push(sphere2);
+		 }
+
+
+//SECOND POINTS all done
+
+var ctr2=750;
+		 for(let i=0;i<4;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr2); 
+sphere2.position.setY(-110);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr2-=80;
+spheres.push(sphere2);
+
+ }
+
+ //THIRD POINT all done
+ 
+ var ctr3=-420;
+ for(let i=0;i<8;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(420); 
+sphere2.position.setY(ctr3);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr3+=80;
+spheres.push(sphere2);
+
+ }
+
+ //FOURTH POINTS all done
+ 
+ var ctr4=350;
+ for(let i=0;i<3;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr4); 
+sphere2.position.setY(180);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr4-=80;
+spheres.push(sphere2);
+
+ }
+ 
+ //FIFTH POINTS all done
+ 
+ var ctr5=180;
+ for(let i=0;i<3;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(110); 
+sphere2.position.setY(ctr5);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr5-=80;
+spheres.push(sphere2);
+
+ }
+ 
+//SIXTH POINTS all done
+
+var ctr6=-500;
+ for(let i=0;i<8;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr6); 
+sphere2.position.setY(-10);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr6+=80;
+spheres.push(sphere2);
+
+ }
+//SEVENTH all done
+
+var ctr7=150;
+ for(let i=0;i<2;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(-510); 
+sphere2.position.setY(ctr7);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr7-=80;
+spheres.push(sphere2);
+ }
+ 
+//EIGHT all done
+
+var ctr8=-580;
+ for(let i=0;i<3;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr8); 
+sphere2.position.setY(200);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+
+ctr8-=80;
+spheres.push(sphere2);
+
+ }
+ 
+ //nine all done
+ 
+ var ctr9=300;
+ for(let i=0;i<7;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(-840); 
+sphere2.position.setY(ctr9);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr9-=80;
+spheres.push(sphere2);
+
+ }
+ 
+ //ten all done
+ 
+ var ctr10=-790;
+ for(let i=0;i<13;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr10); 
+sphere2.position.setY(-210);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr10+=80;
+spheres.push(sphere2);
+
+ }
+
+  //eleven all done
+  
+  var ctr11=-360;
+ for(let i=0;i<3;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(230); 
+sphere2.position.setY(ctr11);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr11+=80;
+spheres.push(sphere2);
+ }
+  
+ ///twelve all done
+ 
+  var ctr12=350;
+ for(let i=0;i<16;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr12); 
+sphere2.position.setY(-420);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr12-=80;
+spheres.push(sphere2);
+ }
+ 
+  //therteen all done
+  
+ var ctr13=-840;
+ for(let i=0;i<22;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(ctr13); 
+sphere2.position.setY(420);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr13+=80;
+spheres.push(sphere2);
+
+
+ }
+   //
+
+//forthyen all done
+
+   var ctr14=-10;
+ for(let i=0;i<5;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(660); 
+sphere2.position.setY(ctr14);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr14+=80;
+spheres.push(sphere2);
+ }
+ //fiftyen
+var ctr15=30;
+ for(let i=0;i<4;i++){
+	
+	const Segeometry = new THREE.SphereGeometry( 10, 10, 10 );
+
+const Sematerial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+sphere2 = new THREE.Mesh( Segeometry, Sematerial );
+sphere2.position.setX(810); 
+sphere2.position.setY(ctr15);
+sphere2.position.setZ(130);
+scene.add( sphere2 );
+ctr15+=80;
+spheres.push(sphere2);
+ }
+		//stop(cube14);
+	};
+
+
+	function KeyPressed (e) {
+	event.preventDefault();
+
+	switch(e.keyCode){
+			//Left key
+			case 65:
+				if(sphere.position.x>-970)
+				sphere.position.x -=50;
+				
+			break;
+			//Up key
+			case 83:
+			if(sphere.position.y>-470)
+				sphere.position.y -= 50;
+		
+			break;
+			//Right key
+			case 68:
+			if(sphere.position.x<970)
+				sphere.position.x += 50;
+		
+			break;
+			//Down key
+			case 87:
+			if(sphere.position.y<470)
+				sphere.position.y += 50;
+				
+			break;
+	
+	//------------------camera move---------------------
+			//A key
+			// case 65:
+			// 	camera.position.x -= 10;
+			// break;
+			// //W key
+			// case 87:
+			// 	camera.position.y += 10;
+			// break;
+			// //D key
+			// case 68:
+			// 	camera.position.x += 10;
+			// break;
+			// //S key
+			// case 83:
+			// 	camera.position.y -= 10;
+			// break;
+		}
+	}
+
+	function checkCollision() {
+// 3amlna variable 7atena feh el sphere el hwa el pacman by name zy ma samena el sphere foo2 
+var sphere = scene.getObjectByName('sphere');
+
+//hena bygeeb el position bta3 el sphere da
+var originPoint = sphere.position.clone();
+
+// hanefterd en el sphere de mokawana mn array of vertices fa el for loop de btlef 3al sphere kolaha no2ta no2ta 
+for (var vertexIndex = 0; vertexIndex < sphere.geometry.vertices.length; vertexIndex++)
+{
+	//hena el variable da bss fekra feeh en yt7at feeh el vertex el loop mashy 3aleeha dlwa2ty
+	var localVertex = sphere.geometry.vertices[vertexIndex].clone();
+	//
+	var globalVertex = localVertex.applyMatrix4(sphere.matrix);
+	var directionVector = globalVertex.sub(sphere.position);
+
+// el ray da bezabt keda bn2olo en originpoint el heya fel asas el point bta3t pacman hatly kol el objects el hatla2yha fel makan da
+	var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+//hena b2olo ya3ni en el ray da 3amal intersect le objects kteer
+// bss ana 3ayzk law la2eet menhmm object mnel ana hatethm fe array spheres(kewar el hamra) 7otaha fe variable bta3 collision results.
+	var collisionResults = ray.intersectObjects(spheres);
+
+	// hena gowa de nektb ehna 3awzeen eh yhsl ama ykhbato fe ba3d
+	if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length())
+	{
+		console.log(collisionResults[0].object.name);
+		collisionResults[0].object.material.transparent = true;
+	    scene.remove(collisionResults[0].object);
+		
+	}
+}
+}
+function checkCollisionObs() {
+var sphere = scene.getObjectByName('sphere');
+
+var originPoint = sphere.position.clone();
+
+for (var vertexIndex = 0; vertexIndex < sphere.geometry.vertices.length; vertexIndex++)
+{
+	var localVertex = sphere.geometry.vertices[vertexIndex].clone();
+	var globalVertex = localVertex.applyMatrix4(sphere.matrix);
+	var directionVector = globalVertex.sub(sphere.position);
+
+	var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+	var collisionResults = ray.intersectObjects(cubes);
+
+	if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length())
+	{
+		gameOver();
+		
+	}
+}
+}
+
+function restart()
+{
+	sphere.position.set(750,-400,130);
+	document.getElementById('gameOver').classList.remove('show');
+	location.reload();
+}
+
+function gameOver()
+{
+	document.getElementById('gameOver').classList.add('show');
+	
+}
+
+function render() {
+        renderer.render(scene, camera);
+		checkCollisionObs();
+
+		checkCollision();
+        requestAnimationFrame(render);
+    }
+	
+	
+	//Init our scene
+	init();
+	
+	
+	</script>
+	</body>
